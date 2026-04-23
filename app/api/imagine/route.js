@@ -1,9 +1,11 @@
+import { NextResponse } from "next/server";
+
 export async function POST(request) {
   try {
     const { prompt } = await request.json();
 
     if (!process.env.GEMINI_API_KEY) {
-      return Response.json({ error: "Missing Gemini API key" }, { status: 500 });
+      return NextResponse.json({ error: "Missing Gemini API key" }, { status: 500 });
     }
 
     const response = await fetch(
@@ -23,8 +25,7 @@ export async function POST(request) {
 
     if (!response.ok) {
       const err = await response.text();
-      console.error("Gemini error:", err);
-      return Response.json({ error: err }, { status: response.status });
+      return NextResponse.json({ error: err }, { status: response.status });
     }
 
     const data = await response.json();
@@ -32,16 +33,14 @@ export async function POST(request) {
     const imagePart = parts.find((p) => p.inlineData);
 
     if (!imagePart) {
-      console.error("No image in Gemini response:", JSON.stringify(data));
-      return Response.json({ error: "No image generated" }, { status: 500 });
+      return NextResponse.json({ error: "No image generated" }, { status: 500 });
     }
 
-    return Response.json({
+    return NextResponse.json({
       imageBase64: imagePart.inlineData.data,
       mimeType: imagePart.inlineData.mimeType,
     });
   } catch (error) {
-    console.error("Imagine route error:", error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
